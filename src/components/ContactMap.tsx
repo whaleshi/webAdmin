@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
 import L from 'leaflet'
 
-const MY_LOCATION: [number, number] = [39.93712882758603, 116.65384379689417]
+const MY_LOCATION: [number, number] = [39.93709094135687, 116.65370008973728]
 
 const markerIcon = new L.DivIcon({
   className: '',
