@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ShapeGridBackground } from './components/ShapeGridBackground'
@@ -25,6 +25,15 @@ function App() {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const heroRef = useRef<HTMLElement | null>(null)
   const progressRef = useRef<HTMLDivElement | null>(null)
+  const [pathname, setPathname] = useState(() => window.location.pathname)
+
+  useEffect(() => {
+    const onPopState = () => setPathname(window.location.pathname)
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  const isMapDetails = pathname.replace(/\/+$/, '') === '/map'
 
   const themeColors = useMemo(() => ['#c084fc', '#f472b6', '#38bdf8'], [])
 
@@ -170,6 +179,45 @@ function App() {
       </header>
 
       <main id="top" className="mx-auto w-full max-w-6xl px-5 pt-16 pb-20 md:pt-[72px]">
+        {isMapDetails ? (
+          <section className="relative py-14 md:py-20">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                地图详情
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  window.history.pushState({}, '', '/')
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+                className="rounded-[16px] bg-white/5 px-3 py-1.5 text-xs text-white/80 ring-1 ring-white/10 hover:bg-white/10"
+              >
+                返回
+              </button>
+            </div>
+
+            <div className="mt-6 h-[70vh] w-full">
+              <BorderGlow
+                edgeSensitivity={30}
+                glowColor="40 80 80"
+                backgroundColor="#060010"
+                borderRadius={20}
+                glowRadius={40}
+                glowIntensity={1}
+                coneSpread={25}
+                animated={false}
+                colors={['#c084fc', '#f472b6', '#38bdf8']}
+              >
+                <div className="h-full overflow-hidden rounded-[20px] ring-1 ring-white/10">
+                  <ContactMap zoom={12} />
+                </div>
+              </BorderGlow>
+            </div>
+          </section>
+        ) : null}
+
+        <div className={isMapDetails ? 'hidden' : ''}>
         <section
           ref={heroRef}
           className="relative flex min-h-[72svh] items-center py-14 md:min-h-[78svh] md:py-20"
@@ -424,17 +472,27 @@ function App() {
               colors={['#c084fc', '#f472b6', '#38bdf8']}
             >
               <div className="overflow-hidden rounded-[20px] ring-1 ring-white/10">
-                <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-xs text-white/70">Map</span>
-                  <span className="text-[11px] text-white/45">Carto</span>
-                </div>
-                <div className="h-[260px] w-full md:h-[320px]">
-                  <ContactMap />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.history.pushState({}, '', '/map')
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="block h-full w-full text-left"
+                >
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-xs text-white/70">Map</span>
+                    <span className="text-[11px] text-white/45">Carto</span>
+                  </div>
+                  <div className="h-[260px] w-full md:h-[320px]">
+                    <ContactMap />
+                  </div>
+                </button>
               </div>
             </BorderGlow>
           </div>
         </section>
+        </div>
       </main>
 
       <FixedFooter themeColors={themeColors} />
