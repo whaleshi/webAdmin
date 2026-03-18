@@ -38,5 +38,19 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Leaflet map: avoid white flash while tiles load */
+  .leaflet-container {
+    background: #0b0f19;
+  }
+  .leaflet-tile,
+  .leaflet-pane,
+  .leaflet-tile-container {
+    background: transparent;
+  }
+  /* Disable tile fade-in to reduce flicker */
+  .leaflet-fade-anim .leaflet-tile {
+    transition: none !important;
+  }
 }
 

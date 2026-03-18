@@ -16,7 +16,8 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
     updatedAt: number
   } | null>(null)
   const [city, setCity] = useState<string>('')
-  const [locationQuery, setLocationQuery] = useState<string>('') // "lat,lon" or city
+  const [coordQuery, setCoordQuery] = useState<string>('') // "lat,lon" only (preferred for weather)
+  const [locationReady, setLocationReady] = useState(false)
   const [weather, setWeather] = useState<string>('-')
   const [now, setNow] = useState(() => Date.now())
 
@@ -93,6 +94,13 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
 
     const load = async () => {
       let geoQuery: string | null = null
+      let cityWasSet = false
+      const setCitySafe = (v: string) => {
+        if (!v) return
+        cityWasSet = true
+        setCity(v)
+      }
+
       // 1) 优先浏览器定位（需要用户允许）
       if (navigator.geolocation) {
         try {
@@ -112,7 +120,7 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
           const { latitude, longitude } = pos.coords
           console.log('[geo] success:', { latitude, longitude })
           geoQuery = `${latitude.toFixed(3)},${longitude.toFixed(3)}`
-          setLocationQuery(geoQuery)
+          setCoordQuery(geoQuery)
 
           // 用经纬度反查行政区（比 IP 更准，避免显示香港/出口节点）
           try {
@@ -132,7 +140,7 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
               const lvl2 = (j.locality ?? j.city ?? '').trim()
               const pretty =
                 lvl1 && lvl2 && lvl1 !== lvl2 ? `${lvl1}·${lvl2}` : (lvl2 || lvl1 || '')
-              if (pretty && alive) setCity(pretty)
+              if (pretty && alive) setCitySafe(pretty)
             }
           } catch {
             // 静默失败：保留现有 city（可能来自 IP 或默认）
@@ -154,17 +162,17 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
           longitude?: number
         }
         if (!alive) return
-        // 只有在定位失败时才用 IP 的城市，避免被出口节点覆盖
-        if (!geoQuery && typeof json.city === 'string') setCity(json.city)
+        // 地址展示优先用定位反查；反查失败时再用 IP 补齐（避免啥也不显示）
+        if (!cityWasSet && typeof json.city === 'string') setCitySafe(json.city)
+        // 只有在没有定位坐标时，才用 IP 坐标作为 coordQuery（避免出口节点覆盖天气位置）
         if (!geoQuery && typeof json.latitude === 'number' && typeof json.longitude === 'number') {
-          setLocationQuery(`${json.latitude.toFixed(3)},${json.longitude.toFixed(3)}`)
-        } else if (typeof json.city === 'string') {
-          // 没有坐标时只能退回到 city（可能是区县级）
-          setLocationQuery(json.city)
+          setCoordQuery(`${json.latitude.toFixed(3)},${json.longitude.toFixed(3)}`)
         }
       } catch {
         // 静默失败
       }
+
+      if (alive) setLocationReady(true)
     }
 
     load()
@@ -178,24 +186,83 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
     let alive = true
     const controller = new AbortController()
 
+    if (!locationReady) return
+
     // 基于定位结果刷新天气（无定位时用占位符/旧值）
-    const query = locationQuery || city || 'Shanghai'
-    const url = query
-      ? `https://wttr.in/${encodeURIComponent(query)}?format=%c+%t&m`
-      : `https://wttr.in/?format=%c+%t&m`
+    const query = coordQuery || city || 'Shanghai'
+    const coordMatch = /^([\d.\-+]+)\s*,\s*([\d.\-+]+)$/.exec(coordQuery)
+    const cacheKey = coordMatch ? `coord:${coordMatch[1]},${coordMatch[2]}` : `city:${query}`
+    let lastKey = ''
+    let lastAt = 0
+    let backoffMs = 0
+
+    const weatherEmojiFromCode = (code: number) => {
+      // https://open-meteo.com/en/docs (WMO weather interpretation codes)
+      if (code === 0) return '☀️'
+      if (code === 1 || code === 2) return '🌤️'
+      if (code === 3) return '☁️'
+      if (code === 45 || code === 48) return '🌫️'
+      if ((code >= 51 && code <= 57) || (code >= 61 && code <= 67)) return '🌧️'
+      if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return '🌨️'
+      if (code >= 80 && code <= 82) return '🌦️'
+      if (code >= 95) return '⛈️'
+      return '🌡️'
+    }
 
     const load = async () => {
       try {
+        const now = Date.now()
+        if (cacheKey === lastKey && now - lastAt < 5 * 60_000) return
+        if (backoffMs > 0 && now - lastAt < backoffMs) return
+
+        // 有经纬度：只用 Open-Meteo（稳定支持 lat/lon、免 key）
+        // 注意：一旦有坐标，不再回退到按城市名请求，避免重复请求与错位。
+        if (coordMatch) {
+          const lat = Number(coordMatch[1])
+          const lon = Number(coordMatch[2])
+          if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            const om = await fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius&timezone=auto`,
+              { signal: controller.signal },
+            )
+            lastKey = cacheKey
+            lastAt = Date.now()
+            if (om.ok) {
+              const j = (await om.json()) as {
+                current_weather?: { temperature?: number; weathercode?: number }
+              }
+              const temp = j.current_weather?.temperature
+              const code = j.current_weather?.weathercode
+              if (typeof temp === 'number') {
+                const emoji = typeof code === 'number' ? weatherEmojiFromCode(code) : '🌡️'
+                if (alive) setWeather(`${emoji} ${temp >= 0 ? '+' : ''}${temp.toFixed(0)}°C`)
+                backoffMs = 0
+                return
+              }
+            }
+          }
+
+          // 坐标模式下：Open-Meteo 不可用时静默失败（保留旧值/占位符）
+          backoffMs = backoffMs ? Math.min(backoffMs * 2, 10 * 60_000) : 2 * 60_000
+          return
+        }
+
+        // 没有经纬度：按城市名用 wttr.in 兜底
+        const url = `https://wttr.in/${encodeURIComponent(query)}?format=%c+%t&m`
         const res = await fetch(url, { signal: controller.signal })
+        lastKey = cacheKey
+        lastAt = Date.now()
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const text = (await res.text()).trim()
         if (!alive) return
         setWeather(text || '-')
-        if (!locationQuery && !city) setCity('Shanghai')
+        backoffMs = 0
+        if (!coordQuery && !city) setCity('Shanghai')
       } catch (e) {
         if (!alive) return
         if (e instanceof DOMException && e.name === 'AbortError') return
         // 静默失败：保留旧值/占位符
+        backoffMs = backoffMs ? Math.min(backoffMs * 2, 10 * 60_000) : 2 * 60_000
       }
     }
 
@@ -206,7 +273,7 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
       controller.abort()
       window.clearInterval(t)
     }
-  }, [city, locationQuery])
+  }, [city, coordQuery, locationReady])
 
   const renderRow = (
     Icon: ComponentType<{ className?: string }>,
