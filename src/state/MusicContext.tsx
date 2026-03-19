@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react'
 
 interface TrackInfo {
   id: string
@@ -174,7 +174,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         onEnded={nextTrack}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
-        referrerPolicy="no-referrer"
       />
     </MusicContext.Provider>
   )
