@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ShapeGridBackground } from './components/ShapeGridBackground'
@@ -10,6 +11,9 @@ import { GitHub } from './icons/GitHub'
 import { XformerlyTwitter } from './icons/XformerlyTwitter'
 import { Gmail } from './icons/Gmail'
 import { ContactMap } from './components/ContactMap'
+import { Web3Login } from './components/Web3Login'
+import { MainContentRouter } from './components/MainContentRouter'
+import { FloatingStatusWidget } from './components/FloatingStatusWidget'
 
 type Project = {
   title: string
@@ -25,17 +29,19 @@ function App() {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const heroRef = useRef<HTMLElement | null>(null)
   const progressRef = useRef<HTMLDivElement | null>(null)
-  const [pathname, setPathname] = useState(() => window.location.pathname)
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  useEffect(() => {
-    const onPopState = () => setPathname(window.location.pathname)
-    window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
-  }, [])
-
-  const isMapDetails = pathname.replace(/\/+$/, '') === '/map'
+  // 页面主内容由 `MainContentRouter` 根据路由切换
 
   const themeColors = useMemo(() => ['#c084fc', '#f472b6', '#38bdf8'], [])
+
+  type ChatMsg = { id: string; from: 'system' | 'you'; text: string }
+  const makeId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
+  const [chatMessages, setChatMessages] = useState<ChatMsg[]>([
+    { id: makeId(), from: 'system', text: '地图已就绪。点击地图/搜索地点，会自动写入聊天上下文。' },
+  ])
+  const [chatInput, setChatInput] = useState<string>('')
 
   const projects = useMemo<Project[]>(
     () => [
@@ -113,8 +119,10 @@ function App() {
         })
       }
     }, rootRef)
+    // 切换路由后重新计算触发器范围与页面高度
+    ScrollTrigger.refresh()
     return () => ctx.revert()
-  }, [])
+  }, [location.pathname])
 
   return (
     <div ref={rootRef} className="min-h-dvh text-neutral-100">
@@ -138,7 +146,7 @@ function App() {
       </div>
 
       <div className="relative z-10">
-      <header className="fixed inset-x-0 top-0 z-40 overflow-hidden border-b border-white/10 bg-[#0b0f19]/70 backdrop-blur">
+      <header className="fixed inset-x-0 top-0 z-40 overflow-visible border-b border-white/10 bg-[#0b0f19]/70 backdrop-blur">
         <div className="pointer-events-none absolute inset-0">
           <div
             ref={progressRef}
@@ -155,69 +163,34 @@ function App() {
           />
         </div>
         <div className="relative flex w-full items-center justify-between px-5 py-3 md:px-8 lg:px-10">
-          <a href="#top" className="font-mono text-sm text-white/85">
-            shijy.dev
-          </a>
-          <nav className="hidden items-center gap-6 text-sm text-white/65 md:flex">
-            <a className="hover:text-white" href="#about">
-              About
-            </a>
-            <a className="hover:text-white" href="#projects">
-              Projects
-            </a>
-            <a className="hover:text-white" href="#contact">
-              Contact
-            </a>
-          </nav>
           <a
-            href="#contact"
-            className="rounded-full bg-white px-4 py-2 text-sm font-medium text-neutral-950 transition hover:-translate-y-0.5"
+            href="/"
+            className="font-mono text-sm text-white/85"
+            onClick={(e) => {
+              e.preventDefault()
+              navigate('/')
+              const raw = window.sessionStorage.getItem('homeScrollY')
+              const y = raw ? Number(raw) : 0
+              window.scrollTo({ top: Number.isFinite(y) ? y : 0, behavior: 'auto' })
+            }}
           >
-            约个时间 →
+            whale
           </a>
+          <div className="flex items-center gap-4">
+
+            <Web3Login />
+          </div>
         </div>
       </header>
 
-      <main id="top" className="mx-auto w-full max-w-6xl px-5 pt-16 pb-20 md:pt-[72px]">
-        {isMapDetails ? (
-          <section className="relative py-14 md:py-20">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-                地图详情
-              </h2>
-              <button
-                type="button"
-                onClick={() => {
-                  window.history.pushState({}, '', '/')
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
-                }}
-                className="rounded-[16px] bg-white/5 px-3 py-1.5 text-xs text-white/80 ring-1 ring-white/10 hover:bg-white/10"
-              >
-                返回
-              </button>
-            </div>
-
-            <div className="mt-6 h-[70vh] w-full">
-              <BorderGlow
-                edgeSensitivity={30}
-                glowColor="40 80 80"
-                backgroundColor="#060010"
-                borderRadius={20}
-                glowRadius={40}
-                glowIntensity={1}
-                coneSpread={25}
-                animated={false}
-                colors={['#c084fc', '#f472b6', '#38bdf8']}
-              >
-                <div className="h-full overflow-hidden rounded-[20px] ring-1 ring-white/10">
-                  <ContactMap zoom={12} />
-                </div>
-              </BorderGlow>
-            </div>
-          </section>
-        ) : null}
-
-        <div className={isMapDetails ? 'hidden' : ''}>
+      <MainContentRouter
+        chatMessages={chatMessages}
+        setChatMessages={setChatMessages}
+        chatInput={chatInput}
+        setChatInput={setChatInput}
+        makeId={makeId}
+      >
+        <div>
         <section
           ref={heroRef}
           className="relative flex min-h-[72svh] items-center py-14 md:min-h-[78svh] md:py-20"
@@ -245,7 +218,7 @@ function App() {
                 data-reveal
                 className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-white/70 md:text-lg"
               >
-                我做 React 工程化与交互动效落地，也做 Web3 前端（EVM 生态）。专注排版层级、细节质感与可维护性。
+                -
               </p>
 
               <div data-reveal className="mt-7 flex flex-wrap items-center gap-3">
@@ -475,8 +448,10 @@ function App() {
                 <button
                   type="button"
                   onClick={() => {
-                    window.history.pushState({}, '', '/map')
-                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                    // 进入地图前保存首页滚动位置，返回时恢复
+                    window.sessionStorage.setItem('homeScrollY', String(window.scrollY))
+                    navigate('/map')
+                    window.scrollTo({ top: 0, behavior: 'auto' })
                   }}
                   className="block h-full w-full text-left"
                 >
@@ -493,8 +468,9 @@ function App() {
           </div>
         </section>
         </div>
-      </main>
+      </MainContentRouter>
 
+      <FloatingStatusWidget />
       <FixedFooter themeColors={themeColors} />
       </div>
     </div>

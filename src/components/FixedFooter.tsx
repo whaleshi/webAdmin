@@ -13,6 +13,7 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
     bnb: PriceRow
     eth: PriceRow
     sol: PriceRow
+    gold: PriceRow
     updatedAt: number
   } | null>(null)
   const [city, setCity] = useState<string>('')
@@ -48,23 +49,19 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
           return n
         }
 
-        const [bnbUsd, ethUsd, solUsd] = await Promise.all([
+        const [bnbUsd, ethUsd, solUsd, goldUsd] = await Promise.all([
           fetchAvg('BNBUSDT'),
           fetchAvg('ETHUSDT'),
           fetchAvg('SOLUSDT'),
+          fetchAvg('PAXGUSDT'),
         ])
 
         if (!alive) return
         setData({
-          bnb: {
-            usd: bnbUsd,
-          },
-          eth: {
-            usd: ethUsd,
-          },
-          sol: {
-            usd: solUsd,
-          },
+          bnb: { usd: bnbUsd },
+          eth: { usd: ethUsd },
+          sol: { usd: solUsd },
+          gold: { usd: goldUsd },
           updatedAt: Date.now(),
         })
       } catch (e) {
@@ -320,6 +317,14 @@ export function FixedFooter({ themeColors }: { themeColors: string[] }) {
           {renderRow(BNB, data?.bnb ?? { usd: Number.NaN }, '#f2c366')}
           {renderRow(Ethereum, data?.eth ?? { usd: Number.NaN }, '#4ea7fa')}
           {renderRow(Solana, data?.sol ?? { usd: Number.NaN }, '#86d99f')}
+          <div className="flex items-center gap-2 py-1">
+            <div className="h-4 w-4 rounded-full bg-[#FFD700]/20 flex items-center justify-center ring-1 ring-[#FFD700]/50">
+              <span className="text-[10px] text-[#FFD700] font-bold">G</span>
+            </div>
+            <span className="font-mono text-[#FFD700]">
+              {Number.isFinite(data?.gold?.usd ?? Number.NaN) ? `$${data!.gold.usd.toFixed(2)}` : '-'}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center font-mono text-white/70">
