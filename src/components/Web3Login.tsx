@@ -206,7 +206,7 @@ export function Web3Login() {
 
   return (
     <div className="flex items-center gap-3">
-      <div ref={chainWrapRef} className="relative">
+      {/* <div ref={chainWrapRef} className="relative">
         <button
           type="button"
           onClick={() => setChainDropdownOpen((v) => !v)}
@@ -254,9 +254,9 @@ export function Web3Login() {
             </button>
           </div>
         ) : null}
-      </div>
+      </div> */}
 
-      <div className="flex h-[36px] items-center gap-2">
+      {/* <div className="flex h-[36px] items-center gap-2">
         <button
           type="button"
           onClick={handleLoginClick}
@@ -285,7 +285,7 @@ export function Web3Login() {
             退出
           </button>
         ) : null}
-      </div>
+      </div> */}
     </div>
   )
 }

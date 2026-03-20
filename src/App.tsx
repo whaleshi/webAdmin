@@ -15,6 +15,8 @@ import { Web3Login } from './components/Web3Login'
 import { MainContentRouter } from './components/MainContentRouter'
 import { FloatingStatusWidget } from './components/FloatingStatusWidget'
 
+import { HeroAvatar } from './components/HeroAvatar'
+
 type Project = {
   title: string
   tags: string[]
@@ -24,6 +26,10 @@ type Project = {
 }
 
 gsap.registerPlugin(ScrollTrigger)
+
+import RotatingText from './components/RotatingText'
+
+import { MeshGradientBackground } from './components/MeshGradientBackground'
 
 function App() {
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -128,21 +134,32 @@ function App() {
     <div ref={rootRef} className="min-h-dvh text-neutral-100">
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 bg-[#0b0f19]" />
+        
+        {/* 新增：主题色流体渐变层 */}
+        <MeshGradientBackground
+          className="absolute inset-0 opacity-40 mix-blend-screen"
+          colors={themeColors}
+          speed={0.4}
+        />
+
         <ShapeGridBackground
-          className="absolute inset-0 opacity-80"
-          cell={52}
-          speed={0.5}
+          className="absolute inset-0 opacity-40"
+          cell={60}
+          speed={0.3}
           colors={themeColors}
         />
+
         <ParticleFlowBackground
-          className="absolute inset-0 opacity-90"
-          density={0.00006}
-          speed={0.8}
-          opacity={0.9}
+          className="absolute inset-0 opacity-70 mix-blend-lighter"
+          density={0.00004}
+          speed={1.2}
+          opacity={0.8}
           colors={themeColors}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(900px_520px_at_50%_-10%,rgba(255,255,255,0.06),transparent_62%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.06),rgba(0,0,0,0.90))]" />
+
+        {/* 增强顶部和底部遮罩，增加深度 */}
+        <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_50%_0%,rgba(192,132,252,0.1)_0%,transparent_60%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(11,15,25,0)_0%,rgba(11,15,25,0.8)_80%,#0b0f19_100%)]" />
       </div>
 
       <div className="relative z-10">
@@ -193,145 +210,134 @@ function App() {
         <div>
         <section
           ref={heroRef}
-          className="relative flex min-h-[72svh] items-center py-14 md:min-h-[78svh] md:py-20"
+          className="relative flex min-h-[85svh] items-center py-20 md:min-h-[90svh]"
         >
-          <div className="grid w-full gap-10 md:grid-cols-12 md:items-center">
-            <div className="md:col-span-7">
-              <p
-                data-reveal
-                className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs text-white/70 ring-1 ring-white/10"
-              >
-                <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
-                Available for freelance
-              </p>
+          {/* 背景装饰：一个巨大的模糊光晕，增强视觉深度 */}
+          <div className="absolute left-1/2 top-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-500/5 blur-[120px]" />
 
-              <h1 data-reveal className="mt-5 text-balance">
-                <span className="block text-[46px] font-semibold leading-[0.96] tracking-tight text-white sm:text-6xl md:text-7xl">
-                  Software
+          <div className="grid w-full gap-16 md:grid-cols-12 md:items-center">
+            {/* 左侧文字区域：更具张力的排版 */}
+            <div className="md:col-span-7">
+              <div data-reveal className="inline-flex items-center gap-3 rounded-full bg-white/5 px-4 py-1.5 text-xs font-medium text-white/80 ring-1 ring-white/10 backdrop-blur-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
                 </span>
-                <span className="block text-[46px] font-semibold leading-[0.96] tracking-tight text-white/80 sm:text-6xl md:text-7xl">
-                  Developer
+                Active in Web3 Ecosystem
+              </div>
+
+              <h1 data-reveal className="mt-8">
+                <span className="block text-[54px] font-bold leading-[0.9] tracking-tight text-white sm:text-7xl md:text-8xl">
+                  Web3 Frontend
+                </span>
+                <span className="mt-2 block pb-2 text-[54px] font-light italic leading-[1.0] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#c084fc] to-[#38bdf8] sm:text-7xl md:text-8xl">
+                  Engineer
                 </span>
               </h1>
 
-              <p
-                data-reveal
-                className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-white/70 md:text-lg"
-              >
-                -
-              </p>
+              <div data-reveal className="mt-8 flex flex-col gap-4">
+                <div className="flex flex-wrap items-center gap-x-3 text-lg font-medium text-white/60">
+                  <span className="font-mono text-xs uppercase tracking-[0.3em]">Building with</span>
+                  <RotatingText
+                    texts={['React', 'Vue', 'Node.js', 'Web3', 'Uni-app', 'TypeScript']}
+                    mainClassName="px-4 py-1 bg-white/5 border border-white/10 text-white rounded-xl overflow-hidden justify-center shadow-[0_8px_32px_-8px_rgba(192,132,252,0.4)] backdrop-blur-xl ring-1 ring-white/10"
+                    staggerFrom={"last"}
+                    initial={{ y: "100%", opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: "-120%", opacity: 0 }}
+                    staggerDuration={0.02}
+                    splitLevelClassName="overflow-hidden pb-0.5"
+                    transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                    rotationInterval={2000}
+                  />
+                </div>
+                <p className="max-w-md text-pretty text-base leading-relaxed text-white/50 md:text-lg">
+                  Experienced developer specializing in multi-platform ecosystems and Web3. Proficient in end-to-end development—from core HTML/CSS to Node.js backend logic—dedicated to crafting high-performance, cross-compatible digital experiences.
+                </p>
+              </div>
 
-              <div data-reveal className="mt-7 flex flex-wrap items-center gap-3">
+              <div data-reveal className="mt-10 flex flex-wrap items-center gap-4">
                 <a
                   href="#projects"
-                  className="rounded-[20px] bg-white px-5 py-3 text-sm font-medium text-neutral-950 transition hover:-translate-y-0.5"
+                  className="group relative flex items-center gap-2 overflow-hidden rounded-full bg-white px-8 py-4 text-sm font-bold text-neutral-950 transition-all hover:pr-10 hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]"
                 >
-                  查看作品
+                  View Projects
+                  <span className="absolute right-4 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100">→</span>
+                </a>
+                <a
+                  href="/resume.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-full bg-white/5 px-8 py-4 text-sm font-bold text-white ring-1 ring-white/15 transition-all hover:bg-white/10 hover:ring-white/30 backdrop-blur-sm"
+                >
+                  Download CV
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
                 </a>
                 <a
                   href="#contact"
-                  className="rounded-[20px] bg-white/5 px-5 py-3 text-sm font-medium text-white ring-1 ring-white/10 transition hover:bg-white/10"
+                  className="text-sm font-bold text-white/50 hover:text-white transition-colors px-4 py-4"
                 >
-                  联系我
+                  Contact Me
                 </a>
-                <div className="ml-0 flex flex-wrap gap-2 md:ml-2">
-                  {['React', 'TypeScript', 'Tailwind', 'GSAP', 'Web3'].map((t) => (
-                    <span key={t} className="tag">
-                      {t}
-                    </span>
-                  ))}
-                </div>
               </div>
             </div>
 
-            <div className="md:col-span-5">
-              <BorderGlow
-                edgeSensitivity={30}
-                glowColor="200 80 70"
-                backgroundColor="#060010"
-                borderRadius={20}
-                glowRadius={40}
-                glowIntensity={1}
-                coneSpread={25}
-                animated={false}
-                colors={['#c084fc', '#f472b6', '#38bdf8']}
+            {/* 右侧区域：HUD 头像展示区 */}
+            <div className="relative md:col-span-5 flex items-center justify-center py-16 md:py-0 overflow-visible">
+              <HeroAvatar colors={themeColors} />
+
+              {/* HUD 悬浮信息块 1：Location */}
+              <div 
+                data-reveal 
+                className="absolute left-[2%] top-[0%] md:-left-24 md:top-[6%] z-20"
+                style={{ animation: 'float 6.5s ease-in-out infinite' }}
               >
-                <div className="p-6">
-                  <div className="text-xs font-medium tracking-wide text-white/55">
-                    Snapshot
-                  </div>
-                  <div className="mt-3 grid gap-3">
-                    {[
-                      { k: 'Location', v: 'Remote' },
-                      { k: 'Focus', v: 'UI polish & motion' },
-                      { k: 'Stack', v: 'React · TS · Tailwind' },
-                      { k: 'Web3', v: 'EVM · Wallets · The Graph' },
-                    ].map((x) => (
-                      <div
-                        key={x.k}
-                        className="flex items-center justify-between rounded-[20px] bg-black/20 px-4 py-3 ring-1 ring-white/10"
-                      >
-                        <span className="text-xs text-white/55">{x.k}</span>
-                        <span className="text-xs font-medium text-white/80">{x.v}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="rounded-xl border border-white/10 bg-[#0b0f19]/40 p-2 md:p-4 backdrop-blur-sm shadow-xl ring-1 ring-white/5">
+                  <div className="text-[7px] md:text-[10px] uppercase tracking-widest text-white/30 font-mono">Location</div>
+                  <div className="mt-0.5 font-mono text-[9px] md:text-xs text-white/80">Remote / Beijing</div>
                 </div>
-              </BorderGlow>
+              </div>
+
+              {/* HUD 悬浮信息块 2：Focus */}
+              <div 
+                data-reveal 
+                className="absolute right-[2%] top-[15%] md:-right-4 md:top-[32%] z-20"
+                style={{ animation: 'float 6s ease-in-out infinite 1s' }}
+              >
+                <div className="rounded-xl border border-white/10 bg-[#0b0f19]/40 p-2 md:p-4 backdrop-blur-sm shadow-xl ring-1 ring-white/5">
+                  <div className="text-[7px] md:text-[10px] uppercase tracking-widest text-white/30 font-mono">Focus</div>
+                  <div className="mt-0.5 font-mono text-[9px] md:text-xs text-white/80">Web3 & dApp</div>
+                </div>
+              </div>
+
+              {/* HUD 悬浮信息块 3：Expertise */}
+              <div 
+                data-reveal 
+                className="absolute left-[4%] bottom-[5%] md:-left-20 md:bottom-[8%] z-20"
+                style={{ animation: 'float 7s ease-in-out infinite 2s' }}
+              >
+                <div className="rounded-xl border border-white/10 bg-[#0b0f19]/40 p-2 md:p-4 backdrop-blur-sm shadow-xl ring-1 ring-white/5">
+                  <div className="text-[7px] md:text-[10px] uppercase tracking-widest text-white/30 font-mono">Expertise</div>
+                  <div className="mt-0.5 font-mono text-[9px] md:text-xs text-white/80">Full-stack & Hybrid</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="about" data-section className="scroll-mt-24 border-t border-white/10 py-16 md:py-20">
-          <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-            <div className="max-w-xl">
-              <h2 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-                About
+        <section id="projects" data-section className="scroll-mt-24 border-t border-white/5 py-24 md:py-32">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4 md:px-0">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight text-white md:text-5xl">
+                Featured Projects
               </h2>
-              <p className="mt-4 text-white/70">
-                喜欢把复杂信息做成易读的布局，再用克制的动效增强节奏。关注 A11y、性能与代码结构。
+              <p className="mt-4 max-w-lg text-base text-white/40 font-medium">
+                A curated selection of my work—from decentralized applications to high-performance frontend systems.
               </p>
             </div>
-            <div className="grid flex-1 gap-4 md:max-w-xl md:grid-cols-3">
-              {[
-                { title: 'Web', desc: 'SPA / Landing / 业务系统' },
-                { title: 'Motion', desc: 'ScrollTrigger / 入场节奏' },
-                { title: 'Web3', desc: 'EVM dApp / 钱包接入 / 链上数据' },
-              ].map((x) => (
-                <BorderGlow
-                  key={x.title}
-                  edgeSensitivity={30}
-                  glowColor="40 80 80"
-                  backgroundColor="#060010"
-                  borderRadius={20}
-                  glowRadius={40}
-                  glowIntensity={1}
-                  coneSpread={25}
-                  animated={false}
-                  colors={['#c084fc', '#f472b6', '#38bdf8']}
-                >
-                  <div className="p-5">
-                    <div data-item className="text-sm font-medium text-white">
-                      {x.title}
-                    </div>
-                    <div data-item className="mt-2 text-sm text-white/70">
-                      {x.desc}
-                    </div>
-                  </div>
-                </BorderGlow>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="projects" data-section className="scroll-mt-24 border-t border-white/10 py-16 md:py-20">
-          <div className="flex items-end justify-between gap-6">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-                Projects
-              </h2>
-              <p className="mt-3 text-sm text-white/70">替换为你的真实项目即可。</p>
-            </div>
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent mb-4 hidden md:block ml-10"></div>
           </div>
 
           <div className="mt-8 grid gap-3">
@@ -389,48 +395,56 @@ function App() {
         <section id="contact" data-section className="scroll-mt-24 border-t border-white/10 py-16 md:py-20">
           <div className="grid gap-6 rounded-[20px] bg-white/5 p-7 ring-1 ring-white/10 md:grid-cols-2 md:p-10">
             <div className="flex flex-col">
-              <h2 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
+              <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
                 Contact
               </h2>
-              <p className="mt-4 text-sm text-white/70">
-                把联系方式替换成你的即可。
+              <p className="mt-4 text-sm text-white/40 font-medium">
+                Feel free to reach out for collaborations, project inquiries, or just a friendly hello.
               </p>
               <div className="mt-6 grid gap-3">
                 {[
-                  { label: 'Email', value: 'hello@shijy.dev', Icon: Gmail },
-                  { label: 'GitHub', value: 'github.com/yourname', Icon: GitHub },
-                  { label: 'X', value: 'x.com/yourname', Icon: XformerlyTwitter },
+                  { label: 'Email', value: 'whaleshi@163.com', href: 'mailto:whaleshi@163.com', Icon: Gmail },
+                  { label: 'GitHub', value: 'github.com/whaleshi', href: 'https://github.com/whaleshi', Icon: GitHub },
+                  { label: 'X', value: 'x.com/whale2869', href: 'https://x.com/whale2869', Icon: XformerlyTwitter },
                 ].map((x) => (
-                  <BorderGlow
+                  <a
                     key={x.label}
-                    edgeSensitivity={30}
-                    glowColor="40 80 80"
-                    backgroundColor="#060010"
-                    borderRadius={20}
-                    glowRadius={40}
-                    glowIntensity={1}
-                    coneSpread={25}
-                    animated={false}
-                    colors={['#c084fc', '#f472b6', '#38bdf8']}
+                    href={x.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block group"
                   >
-                    <div className="px-4 py-3">
-                      <div data-item className="flex items-center justify-between gap-4">
-                        <span className="inline-flex items-center gap-2 text-xs text-white/70">
-                          <x.Icon className="h-4 w-4" aria-hidden="true" focusable="false" />
-                          {x.label}
-                        </span>
-                        <span className="truncate font-mono text-xs text-white/85">{x.value}</span>
+                    <BorderGlow
+                      edgeSensitivity={30}
+                      glowColor="40 80 80"
+                      backgroundColor="#060010"
+                      borderRadius={20}
+                      glowRadius={40}
+                      glowIntensity={1}
+                      coneSpread={25}
+                      animated={false}
+                      colors={['#c084fc', '#f472b6', '#38bdf8']}
+                      className="transition-transform group-hover:-translate-y-1"
+                    >
+                      <div className="px-4 py-3">
+                        <div data-item className="flex items-center justify-between gap-4">
+                          <span className="inline-flex items-center gap-2 text-xs text-white/70 group-hover:text-white transition-colors">
+                            <x.Icon className="h-4 w-4" aria-hidden="true" focusable="false" />
+                            {x.label}
+                          </span>
+                          <span className="truncate font-mono text-xs text-white/85 group-hover:text-white transition-colors">{x.value}</span>
+                        </div>
                       </div>
-                    </div>
-                  </BorderGlow>
+                    </BorderGlow>
+                  </a>
                 ))}
               </div>
               <a
                 data-item
                 href="#top"
-                className="mt-4 inline-flex items-center justify-center rounded-[20px] bg-white px-4 py-3 text-sm font-medium text-neutral-950 transition hover:-translate-y-0.5"
+                className="mt-4 inline-flex items-center justify-center rounded-[20px] bg-white px-4 py-3 text-sm font-bold text-neutral-950 transition-all hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]"
               >
-                回到顶部 ↑
+                Back to top ↑
               </a>
             </div>
             <BorderGlow

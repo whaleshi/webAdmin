@@ -26,7 +26,16 @@
     text-wrap: balance;
   }
 
-  .tag {
+  @keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.tag {
     @apply rounded-full bg-white/5 px-3 py-1 text-xs text-white/70 ring-1 ring-white/10;
   }
 
