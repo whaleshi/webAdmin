@@ -191,7 +191,7 @@ function App() {
               window.scrollTo({ top: Number.isFinite(y) ? y : 0, behavior: 'auto' })
             }}
           >
-            whale
+            Whale
           </a>
           <div className="flex items-center gap-4">
 

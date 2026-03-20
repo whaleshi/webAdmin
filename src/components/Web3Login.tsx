@@ -1,35 +1,35 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, /* useMemo, */ useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import bs58 from 'bs58'
-import { BNB } from '../icons/BNB'
-import { Solana } from '../icons/Solana'
+// import { BNB } from '../icons/BNB'
+// import { Solana } from '../icons/Solana'
 import { useAuth } from '../state/AuthContext'
 
 type ChainKey = 'bnb' | 'sol'
 
-function shortAddress(a: string, head = 4, tail = 4) {
-  if (!a) return ''
-  if (a.length <= head + tail) return a
-  return `${a.slice(0, head)}...${a.slice(-tail)}`
-}
+// function shortAddress(a: string, head = 4, tail = 4) {
+//   if (!a) return ''
+//   if (a.length <= head + tail) return a
+//   return `${a.slice(0, head)}...${a.slice(-tail)}`
+// }
 
 export function Web3Login() {
-  const [chain, setChain] = useState<ChainKey>('bnb')
+  // const [chain] = useState<ChainKey>('bnb')
   const navigate = useNavigate()
 
-  const { openConnectModal } = useConnectModal()
+  const { /* openConnectModal */ } = useConnectModal()
 
-  const { connected, publicKey, disconnect, signMessage } = useWallet()
-  const { setVisible } = useWalletModal()
+  const { connected, publicKey, /* disconnect, */ signMessage } = useWallet()
+  const { /* setVisible */ } = useWalletModal()
 
   // BNB wallet state (only used when chain === 'bnb')
   const { address, isConnected } = useAccount()
-  const { disconnect: disconnectBnb } = useDisconnect()
-  const { setAuthFromBackendResponse, clearAuth } = useAuth()
+  const { /* disconnect: disconnectBnb */ } = useDisconnect()
+  const { setAuthFromBackendResponse, /* clearAuth */ } = useAuth()
 
   const [chainDropdownOpen, setChainDropdownOpen] = useState(false)
   const chainWrapRef = useRef<HTMLDivElement | null>(null)
@@ -51,13 +51,17 @@ export function Web3Login() {
     }
   }, [chainDropdownOpen])
 
+  /*
   const solAddress = useMemo(() => {
     const pk = publicKey?.toBase58()
     return pk ? shortAddress(pk, 4, 4) : ''
   }, [publicKey])
+  */
 
+  /*
   const bnbAddress = address ?? ''
-  const bnbShortAddress = useMemo(() => shortAddress(bnbAddress, 4, 4), [bnbAddress])
+  */
+  // const bnbShortAddress = useMemo(() => shortAddress(bnbAddress, 4, 4), [bnbAddress])
 
   const apiBaseUrl = String(import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000')
 
@@ -178,6 +182,7 @@ export function Web3Login() {
     }
   }, [pendingLoginChain, authLoading, isConnected, address, connected, publicKey, navigate])
 
+  /*
   const handleLoginClick = () => {
     if (chain === 'bnb') {
       if (!isConnected) {
@@ -203,6 +208,7 @@ export function Web3Login() {
     else disconnect()
     clearAuth()
   }
+  */
 
   return (
     <div className="flex items-center gap-3">

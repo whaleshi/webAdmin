@@ -28,13 +28,6 @@ export function MeshGradientBackground({
       h = canvas.height = window.innerHeight
     }
 
-    const circles = [
-      { x: 0, y: 0, r: 0.8, color: colors[0], v: 0.01 },
-      { x: w, y: 0, r: 0.7, color: colors[1], v: 0.012 },
-      { x: 0, y: h, r: 0.9, color: colors[2], v: 0.008 },
-      { x: w, y: h, r: 0.6, color: colors[0], v: 0.015 },
-    ]
-
     const animate = () => {
       time += 0.01 * speed
       ctx.clearRect(0, 0, w, h)
